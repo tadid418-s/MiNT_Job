@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+
 import Footer from '../../components/Footer';
 
 const LoginPage = () => {
@@ -15,15 +16,52 @@ const LoginPage = () => {
 
   const handleTogglePassword = () => setShowPassword((prev) => !prev);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    if (!employeeId || !password) {
-      setError('Please enter both Employee ID and Password.');
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setError('');
+
+  if (!employeeId || !password) {
+    setError('Please enter both Employee ID and Password.');
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ employeeId, password }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      setError(data.message || 'Login failed');
       return;
     }
-    router.push('/jobs');
-  };
+
+    // Redirect based on role returned by API
+    switch (data.role) {
+      case 'admin':
+        router.push('/dashboard/admin');
+        break;
+      case 'employee':
+        router.push('/dashboard/employee');
+        break;
+      case 'hr-manager':
+        router.push('/dashboard/hr-manager');
+        break;
+      case 'manager':
+        router.push('/dashboard/manager');
+        break;
+      default:
+        setError('Unknown role');
+    }
+  } catch (err) {
+    console.error(err);
+    setError('Something went wrong. Try again later.');
+  }
+};
+
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#e6f6f8] via-[#f0f9fa] to-[#e6f6f8]">

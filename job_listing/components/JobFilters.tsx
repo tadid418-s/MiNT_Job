@@ -1,50 +1,119 @@
 'use client'
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
-const jobTypeOptions = [
-  { label: 'All', count: 2567 },
-  { label: 'Full-Time', count: 450 },
-  { label: 'Part-Time', count: 145 },
-  { label: 'Internship', count: 85 },
-  { label: 'Contract', count: 12 },
-];
-const jobFunctionOptions = [
-  { label: 'Marketing', count: 21 },
-  { label: 'Engineering', count: 45 },
-  { label: 'Design', count: 71 },
-  { label: 'Sales', count: 24 },
-  { label: 'Customer Service', count: 109 },
-];
-const experienceOptions = [
-  { label: 'Fresher/Entry-Level', count: 265 },
-  { label: 'Junior', count: 41 },
-  { label: 'Mid-Level', count: 212 },
-  { label: 'Senior', count: 12 },
-  { label: 'Lead/Managerial', count: 24 },
-  { label: 'Director/Executive', count: 10 },
-];
+type Job = {
+  _id: string;
+  title: string;
+  type: string;
+  function: string;
+  experienceLevel: string;
+  // Add other job fields as needed
+};
 
-const JobFilters = () => {
+type FilterOptions = {
+  jobType: string[];
+  jobFunction: string[];
+  experienceLevel: string[];
+};
+
+const JobFilters = ({ onFilterChange }: { onFilterChange: (filters: FilterOptions) => void }) => {
   const [expanded, setExpanded] = useState<string[]>(['Job Type']);
+  const [filters, setFilters] = useState<FilterOptions>({
+    jobType: [],
+    jobFunction: [],
+    experienceLevel: []
+  });
+  const [counts, setCounts] = useState({
+    jobType: {},
+    jobFunction: {},
+    experienceLevel: {}
+  });
+  const [loading, setLoading] = useState(true);
+
+  // Fetch filter counts from API
+  useEffect(() => {
+    const fetchFilterCounts = async () => {
+      try {
+        const res = await fetch('/api/jobs/filter-counts');
+        const data = await res.json();
+        setCounts(data);
+      } catch (error) {
+        console.error('Error fetching filter counts:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchFilterCounts();
+  }, []);
+
+  // Generate options from database counts
+  const jobTypeOptions = Object.entries(counts.jobType).map(([label, count]) => ({
+    label,
+    count: count as number
+  }));
+
+  const jobFunctionOptions = Object.entries(counts.jobFunction).map(([label, count]) => ({
+    label,
+    count: count as number
+  }));
+
+  const experienceOptions = Object.entries(counts.experienceLevel).map(([label, count]) => ({
+    label,
+    count: count as number
+  }));
 
   const handleToggle = (section: string) => {
-    setExpanded((prev) =>
+    setExpanded(prev =>
       prev.includes(section)
-        ? prev.filter((s) => s !== section)
+        ? prev.filter(s => s !== section)
         : [...prev, section]
     );
   };
 
-  const handleExpandAll = () => {
-    setExpanded(['Job Type', 'Job Functions', 'Experience Level']);
+  const handleFilterChange = (category: keyof FilterOptions, value: string, checked: boolean) => {
+    const newFilters = { ...filters };
+    if (checked) {
+      newFilters[category] = [...newFilters[category], value];
+    } else {
+      newFilters[category] = newFilters[category].filter(v => v !== value);
+    }
+    setFilters(newFilters);
+    onFilterChange(newFilters);
   };
-  const handleCollapseAll = () => {
-    setExpanded([]);
-  };
+
   const handleClearAll = () => {
-    setExpanded([]);
+    setFilters({
+      jobType: [],
+      jobFunction: [],
+      experienceLevel: []
+    });
+    onFilterChange({
+      jobType: [],
+      jobFunction: [],
+      experienceLevel: []
+    });
   };
+
+  const handleExpandAll = () => setExpanded(['Job Type', 'Job Functions', 'Experience Level']);
+  const handleCollapseAll = () => setExpanded([]);
+
+  if (loading) {
+    return (
+      <aside className="w-full md:w-64 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <div className="space-y-4">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="animate-pulse">
+              <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
+              {[...Array(3)].map((_, j) => (
+                <div key={j} className="h-4 bg-gray-100 rounded w-full mb-1"></div>
+              ))}
+            </div>
+          ))}
+        </div>
+      </aside>
+    );
+  }
 
   return (
     <aside className="w-full md:w-64 bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8 md:mb-0 md:mr-8 flex-shrink-0">
@@ -59,7 +128,8 @@ const JobFilters = () => {
           Clear all
         </button>
       </div>
-      {/* Job Type */}
+
+      {/* Job Type Filter */}
       <div className="mb-6">
         <button
           type="button"
@@ -72,9 +142,14 @@ const JobFilters = () => {
         </button>
         {expanded.includes('Job Type') && (
           <div className="flex flex-col gap-2">
-            {jobTypeOptions.map((opt) => (
+            {jobTypeOptions.map(opt => (
               <label key={opt.label} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                <input type="checkbox" className="accent-purple-600" />
+                <input
+                  type="checkbox"
+                  className="accent-purple-600"
+                  checked={filters.jobType.includes(opt.label)}
+                  onChange={(e) => handleFilterChange('jobType', opt.label, e.target.checked)}
+                />
                 <span>{opt.label}</span>
                 <span className="ml-auto text-xs text-gray-400">({opt.count})</span>
               </label>
@@ -82,7 +157,8 @@ const JobFilters = () => {
           </div>
         )}
       </div>
-      {/* Job Functions */}
+
+      {/* Job Functions Filter */}
       <div className="mb-6">
         <button
           type="button"
@@ -95,9 +171,14 @@ const JobFilters = () => {
         </button>
         {expanded.includes('Job Functions') && (
           <div className="flex flex-col gap-2">
-            {jobFunctionOptions.map((opt) => (
+            {jobFunctionOptions.map(opt => (
               <label key={opt.label} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                <input type="checkbox" className="accent-purple-600" />
+                <input
+                  type="checkbox"
+                  className="accent-purple-600"
+                  checked={filters.jobFunction.includes(opt.label)}
+                  onChange={(e) => handleFilterChange('jobFunction', opt.label, e.target.checked)}
+                />
                 <span>{opt.label}</span>
                 <span className="ml-auto text-xs text-gray-400">({opt.count})</span>
               </label>
@@ -105,7 +186,8 @@ const JobFilters = () => {
           </div>
         )}
       </div>
-      {/* Experience Level */}
+
+      {/* Experience Level Filter */}
       <div className="mb-6">
         <button
           type="button"
@@ -118,9 +200,14 @@ const JobFilters = () => {
         </button>
         {expanded.includes('Experience Level') && (
           <div className="flex flex-col gap-2">
-            {experienceOptions.map((opt) => (
+            {experienceOptions.map(opt => (
               <label key={opt.label} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                <input type="checkbox" className="accent-purple-600" />
+                <input
+                  type="checkbox"
+                  className="accent-purple-600"
+                  checked={filters.experienceLevel.includes(opt.label)}
+                  onChange={(e) => handleFilterChange('experienceLevel', opt.label, e.target.checked)}
+                />
                 <span>{opt.label}</span>
                 <span className="ml-auto text-xs text-gray-400">({opt.count})</span>
               </label>
@@ -128,7 +215,7 @@ const JobFilters = () => {
           </div>
         )}
       </div>
-      {/* Expand/Collapse all */}
+
       <div className="flex gap-2">
         <button
           type="button"
@@ -153,4 +240,4 @@ const JobFilters = () => {
   );
 };
 
-export default JobFilters; 
+export default JobFilters;
