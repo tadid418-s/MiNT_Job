@@ -6,7 +6,7 @@ type Job = {
   _id: string;
   title: string;
   type: string;
-  function: string;
+  category: string;
   experienceLevel: string;
   // Add other job fields as needed
 };

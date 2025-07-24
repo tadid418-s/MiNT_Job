@@ -10,7 +10,7 @@ export interface IJob extends Document {
   organization: string;
   type: string;
   category: string;
-  experiencelevel: string;
+  experienceLevel: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -60,7 +60,7 @@ const JobSchema: Schema = new Schema({
     default: '',
     trim: true
   },
-   experiencelevel: { 
+   experienceLevel: { 
     type: String, 
     default: '',
     trim: true

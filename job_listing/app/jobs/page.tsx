@@ -6,15 +6,32 @@ import JobCard from '../../components/JobCard';
 import Footer from '../../components/Footer';
 import { useState, useEffect } from 'react';
 
+function getPostedAgo(dateString: string): string {
+  const createdAt = new Date(dateString);
+  const now = new Date();
+  const diffMs = now.getTime() - createdAt.getTime();
+  const diffSeconds = Math.floor(diffMs / 1000);
+  const diffMinutes = Math.floor(diffSeconds / 60);
+  const diffHours = Math.floor(diffMinutes / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffDays > 0) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+  if (diffHours > 0) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+  if (diffMinutes > 0) return `${diffMinutes} minute${diffMinutes > 1 ? 's' : ''} ago`;
+  return 'Just now';
+}
+
 type Job = {
   _id: string;
   title?: string;
   organization?: string;
   description?: string;
   department?: string;
+  category?: string;
   location?: string;
   type?: string;
   experienceLevel?: string;
+  deadline?: string;
   createdAt: string;
 };
 
@@ -67,7 +84,7 @@ export default function JobsPage() {
       const notFromExcludedOrg = !(job.organization ?? '').toLowerCase().includes('ministry of innovation') &&
         !(job.organization ?? '').toLowerCase().includes('mint');
       const jobTypeMatch = filters.jobType.length === 0 || filters.jobType.includes(job.type ?? '');
-      const functionMatch = filters.jobFunction.length === 0 || filters.jobFunction.includes(job.department ?? '');
+      const functionMatch = filters.jobFunction.length === 0 || filters.jobFunction.includes(job.category ?? '');
       const experienceMatch = filters.experienceLevel.length === 0 || filters.experienceLevel.includes(job.experienceLevel ?? '');
 
       return titleMatch && notFromExcludedOrg && jobTypeMatch && functionMatch && experienceMatch;
@@ -173,15 +190,19 @@ export default function JobsPage() {
           <div className="flex flex-col space-y-6">
             {displayedJobs.map((job) => (
               <JobCard
-                key={job._id}
-                id={job._id}
-                title={job.title ?? 'Untitled Job'}
-                department={job.organization ?? 'Unknown'}
-                description={job.description}
-                category={job.department ?? 'General'}
-                type={job.type ?? 'Full-time'}
-                location={job.location ?? 'Remote'}
-              />
+  key={job._id}
+  id={job._id}
+  title={job.title ?? 'Untitled Job'}
+  department={job.organization ?? 'Unknown'}
+  description={job.description}
+  category={job.category ?? 'General'}
+  type={job.type ?? 'Full-time'}
+  location={job.location ?? 'Remote'}
+  experienceLevel={job.experienceLevel ?? 'N/A'}
+  deadline={job.deadline ?? 'N/A'}
+  postedAgo={getPostedAgo(job.createdAt)}
+/>
+
             ))}
           </div>
 

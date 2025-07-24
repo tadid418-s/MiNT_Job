@@ -14,7 +14,12 @@ import {
   LogOut,
 } from 'lucide-react';
 import CreateJobForm from '@/components/CreateJobForm';
-// Menu configuration
+import { useRouter } from 'next/navigation'; // ✅ correct import
+import ManageJobs from '@/components/manageJobs';
+import DefineQualification from '@/components/DefineQualification';
+import ViewApplicants from '@/components/ViewApplicants';
+
+
 const menuItems = [
   { label: 'Dashboard Home', icon: LayoutDashboard, action: 'home' },
   { label: 'Create Job Post', icon: Briefcase, action: 'createJob' },
@@ -32,17 +37,18 @@ const menuItems = [
 
 const HRDashboard = () => {
   const [activeSection, setActiveSection] = useState('home');
+  const router = useRouter(); // ✅ useRouter instead of next/router
 
   const renderContent = () => {
     switch (activeSection) {
       case 'createJob':
         return <CreateJobForm />;
       case 'manageJobs':
-        return <p>Edit or elete existing job posts.</p>;
+        return <ManageJobs />;
       case 'qualifications':
-        return <p>Define qualifications required for each job role.</p>;
+        return <DefineQualification />;
       case 'viewApplicants':
-        return <p>View applicants who applied for open positions.</p>;
+        return <ViewApplicants />;
       case 'resumes':
         return <p>Access and download uploaded resumes.</p>;
       case 'rankedApplicants':
@@ -63,13 +69,11 @@ const HRDashboard = () => {
   };
 
   const handleLogout = () => {
-    // Add logout logic here (e.g., clear session, redirect)
-    alert('Logged out');
+    router.push('/logout');
   };
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      {/* Sidebar */}
       <aside className="w-72 bg-white border-r shadow-md flex flex-col justify-between">
         <div className="p-6 overflow-y-auto">
           <h2 className="text-2xl font-bold text-[#087684] mb-6">HR Dashboard</h2>
@@ -91,7 +95,6 @@ const HRDashboard = () => {
           </div>
         </div>
 
-        {/* Logout Button */}
         <div className="border-t p-4">
           <button
             onClick={handleLogout}
@@ -103,7 +106,6 @@ const HRDashboard = () => {
         </div>
       </aside>
 
-      {/* Main Content */}
       <main className="flex-1 p-10">
         <h1 className="text-3xl font-bold text-[#087684] mb-6">
           {menuItems.find((item) => item.action === activeSection)?.label}

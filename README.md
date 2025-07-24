@@ -52,6 +52,15 @@ job_listing/
   styles/             # Global styles (Tailwind)
   ...
 ```
+# To Push the project into github
+1. **Set your account:**
+   - **git config --global user.name "your username"**
+   - **git config --global user.email email@gmail.com**
+2. **Commit your project from folder**
+3. **git commit -m "write some message"**
+4. **Check Status:- git status**
+5. **Pull Project:-  git pull origin main**
+6. **Finally Push:- git push origin main**
 
 ---
 

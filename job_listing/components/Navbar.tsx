@@ -79,7 +79,7 @@ const Navbar = () => {
               priority
             />
             <span className="ml-2 flex flex-col justify-center leading-none">
-              <span>MiNT</span>
+              <span>MInT</span>
               <span className="text-xs font-semibold text-gray-400 mt-0.5 self-end italic dancing-script">Jobs</span>
             </span>
           </span>

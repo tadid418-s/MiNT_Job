@@ -3,6 +3,7 @@
 import { FC, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 interface JobCardProps {
   id: string;
@@ -31,7 +32,7 @@ const JobCard: FC<JobCardProps> = ({
   location = 'Remote',
   description = 'No description provided.',
   postedAgo = 'Posted recently',
-  experienceLevel = 'ENTRY',
+  experienceLevel ,
   deadline = 'No deadline',
   category = 'General',
   link = '',
@@ -41,10 +42,13 @@ const JobCard: FC<JobCardProps> = ({
 
   const handleViewDetails = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
-  const handleApplyNow = () => {
-    console.log(`Applying for ${title}`);
-    setIsModalOpen(false);
-  };
+  const router = useRouter();
+
+const handleApplyNow = () => {
+  router.push(`/apply/${id}`);
+  setIsModalOpen(false);
+};
+
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === 'Escape') handleCloseModal();
   };
@@ -110,7 +114,7 @@ const JobCard: FC<JobCardProps> = ({
               <span className="text-xs text-gray-400">Experience level</span>
             </div>
             <div className="flex flex-col items-start">
-              <span className="text-gray-700 font-semibold text-base">{deadline}</span>
+              <span className="text-gray-700 font-semibold text-base">{new Date(deadline).toLocaleDateString()}</span>
               <span className="text-xs text-gray-400">Deadline</span>
             </div>
           </div>
@@ -137,7 +141,7 @@ const JobCard: FC<JobCardProps> = ({
         </div>
       </motion.div>
 
-      <AnimatePresence>
+       <AnimatePresence>
         {isModalOpen && (
           <motion.div
             className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
@@ -156,13 +160,107 @@ const JobCard: FC<JobCardProps> = ({
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Modal Content */}
-              {/* ... similar to above, omitted for brevity, you can keep your existing modal content */}
+              {/* Modal Header */}
+              <div className="p-6 border-b border-gray-200">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
+                  <button
+                    onClick={handleCloseModal}
+                    className="text-gray-400 hover:text-gray-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400 rounded-full p-1"
+                    aria-label="Close modal"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  <span className="px-3 py-1 rounded-full text-sm font-semibold border bg-gray-100 text-gray-700 border-gray-200">{category}</span>
+                  <span className={`px-3 py-1 rounded-full text-sm font-semibold border ${typeColors[type] || 'bg-gray-100 text-gray-700 border-gray-200'}`}>{type}</span>
+                </div>
+                <div className="flex items-center gap-4 text-sm text-gray-600">
+                  <span className="flex items-center gap-1">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    {location}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {postedAgo}
+                  </span>
+                </div>
+              </div>
+
+              {/* Modal Body */}
               <div className="p-6">
-                <h2 className="text-2xl font-bold mb-4">{title}</h2>
-                <p>{description}</p>
-                {/* Add more detailed job info here */}
-                <button onClick={handleCloseModal} className="mt-4 px-4 py-2 bg-gray-300 rounded">Close</button>
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Job Description</h3>
+                  <div className="text-gray-700 leading-relaxed">
+                    <p className="mb-4">
+                      We're seeking a <span className="font-semibold">{title}</span> to join our team at {department}. 
+                      This is an exciting opportunity to work in a dynamic environment and contribute to our mission of innovation and excellence.
+                    </p>
+                    <p className="mb-4">
+                      {description}
+                    </p>
+                    <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                      <h4 className="font-semibold text-gray-900 mb-2">Key Responsibilities:</h4>
+                      <ul className="list-disc list-inside text-gray-700 space-y-1">
+                        <li>Develop and maintain high-quality applications</li>
+                        <li>Collaborate with cross-functional teams</li>
+                        <li>Participate in code reviews and technical discussions</li>
+                        <li>Contribute to continuous improvement initiatives</li>
+                      </ul>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                      <h4 className="font-semibold text-gray-900 mb-2">Requirements:</h4>
+                      <ul className="list-disc list-inside text-gray-700 space-y-1">
+                        <li>Experience level: {experienceLevel}</li>
+                        <li>Strong problem-solving skills</li>
+                        <li>Excellent communication abilities</li>
+                        <li>Ability to work in a team environment</li>
+                      </ul>
+                    </div>
+                    {link && (
+                      <div className="bg-blue-50 rounded-lg p-4">
+                        <h4 className="font-semibold text-gray-900 mb-2">Full Job Description & Application Form:</h4>
+                        <a
+                          href={link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 underline break-all hover:text-blue-800"
+                        >
+                          {link}
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div className="text-sm text-gray-600">
+                    <span className="font-semibold">Application Deadline:</span>
+                    <span className="text-gray-700 font-semibold text-base">{new Date(deadline).toLocaleDateString()}</span>
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={handleCloseModal}
+                      className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                    >
+                      Close
+                    </button>
+                    <button
+                      onClick={handleApplyNow}
+                      className="px-6 py-2 bg-[#087684] text-white font-medium rounded-lg hover:bg-[#087684]/90 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#087684] focus:ring-offset-2"
+                    >
+                      Apply Now
+                    </button>
+                  </div>
+                </div>
               </div>
             </motion.div>
           </motion.div>
