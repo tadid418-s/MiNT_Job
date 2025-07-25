@@ -79,20 +79,19 @@ export default function JobsPage() {
   };
 
   const filteredJobs = jobs
-    .filter(job => {
-      const titleMatch = (job.title ?? '').toLowerCase().includes(searchTerm.toLowerCase());
-      const notFromExcludedOrg = !(job.organization ?? '').toLowerCase().includes('ministry of innovation') &&
-        !(job.organization ?? '').toLowerCase().includes('mint');
-      const jobTypeMatch = filters.jobType.length === 0 || filters.jobType.includes(job.type ?? '');
-      const functionMatch = filters.jobFunction.length === 0 || filters.jobFunction.includes(job.category ?? '');
-      const experienceMatch = filters.experienceLevel.length === 0 || filters.experienceLevel.includes(job.experienceLevel ?? '');
+  .filter(job => {
+    const titleMatch = (job.title ?? '').toLowerCase().includes(searchTerm.toLowerCase());
+    const jobTypeMatch = filters.jobType.length === 0 || filters.jobType.includes(job.type ?? '');
+    const functionMatch = filters.jobFunction.length === 0 || filters.jobFunction.includes(job.category ?? '');
+    const experienceMatch = filters.experienceLevel.length === 0 || filters.experienceLevel.includes(job.experienceLevel ?? '');
 
-      return titleMatch && notFromExcludedOrg && jobTypeMatch && functionMatch && experienceMatch;
-    })
-    .map(job => ({
-      ...job,
-      organization: job.organization?.replace(/Ministry of Innovation|MInT/gi, 'Innovation Hub') ?? 'Unknown Org'
-    }));
+    return titleMatch && jobTypeMatch && functionMatch && experienceMatch;
+  })
+  .map(job => ({
+    ...job,
+    organization: job.organization?.replace(/Ministry of Innovation|MInT/gi, 'Innovation Hub') ?? 'Unknown Org'
+  }));
+
 
   const sortedJobs = [...filteredJobs].sort((a, b) => {
     const dateA = new Date(a.createdAt).getTime();
