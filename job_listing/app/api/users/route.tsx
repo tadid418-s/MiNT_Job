@@ -9,7 +9,7 @@ export async function POST(request: Request) {
     const body = await request.json();
 
     // Validate required fields
-    if (!body.employeeId || !body.role) {
+    if (!body.employeeId || !body.role || !body.name || !body.department || !body.email) {
       return NextResponse.json({ message: 'Missing required fields' }, { status: 400 });
     }
 
@@ -22,6 +22,9 @@ export async function POST(request: Request) {
     const newUser = new User({
       employeeId: body.employeeId,
       role: body.role,
+      name: body.name,
+      department: body.department,
+      email: body.email,
     });
 
     await newUser.save();
@@ -31,6 +34,9 @@ export async function POST(request: Request) {
       _id: newUser._id,
       employeeId: newUser.employeeId,
       role: newUser.role,
+      name: newUser.name,
+      department: newUser.department,
+      email: newUser.email,
     }, { status: 201 });
   } catch (error) {
     console.error('Failed to create user:', error);

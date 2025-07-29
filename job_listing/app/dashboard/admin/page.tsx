@@ -1,8 +1,6 @@
-// app/dashboard/admin/page.tsx (or AdminDashboard.tsx if using traditional routing)
-
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   Users,
   Settings,
@@ -11,8 +9,8 @@ import {
   Upload,
   ShieldCheck,
   Activity,
-  Menu,
 } from 'lucide-react'
+import SignupPage from '@/app/signup/page'
 
 const menuItems = [
   { title: 'User Management', icon: <Users />, content: 'Create and manage user accounts (HR, managers, employees).' },
@@ -26,6 +24,50 @@ const menuItems = [
 
 export default function AdminDashboard() {
   const [selected, setSelected] = useState(0)
+  const [users, setUsers] = useState<any[]>([])
+  const [loading, setLoading] = useState(false)
+
+  // Fetch users when User Management tab is selected
+  useEffect(() => {
+    if (selected !== 0) return
+
+    async function fetchUsers() {
+      setLoading(true)
+      try {
+        const res = await fetch('/api/users')
+        if (!res.ok) {
+          const errorText = await res.text()
+          throw new Error(`HTTP ${res.status}: ${errorText}`)
+        }
+        const data = await res.json()
+        setUsers(data)
+      } catch (err: any) {
+        console.error('fetchUsers error:', err)
+        alert(`Failed to fetch users: ${err.message}`)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchUsers()
+  }, [selected])
+
+  // Delete user handler
+  const deleteUser = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this user?')) return
+
+    try {
+      const res = await fetch(`/api/users?id=${id}`, { method: 'DELETE' })
+      if (!res.ok) {
+        const errorText = await res.text()
+        throw new Error(`HTTP ${res.status}: ${errorText}`)
+      }
+      setUsers(users.filter(user => user._id !== id))
+    } catch (err: any) {
+      console.error('deleteUser error:', err)
+      alert(`Failed to delete user: ${err.message}`)
+    }
+  }
 
   return (
     <div className="flex h-screen">
@@ -51,14 +93,60 @@ export default function AdminDashboard() {
         <h1 className="text-3xl font-bold text-[#087684] mb-4">{menuItems[selected].title}</h1>
         <p className="text-lg text-gray-700 mb-6">{menuItems[selected].content}</p>
 
-        {/* You can conditionally render forms/components here */}
+        {/* User Management */}
         {selected === 0 && (
           <div className="border p-6 rounded bg-white shadow">
-            {/* Placeholder for user management form */}
-            <p className="text-sm text-gray-600">[Form to create or edit users goes here]</p>
+            {loading ? (
+              <p>Loading users...</p>
+            ) : (
+              <table className="min-w-full text-sm">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="text-left p-2">Employee ID</th>
+                    <th className="text-left p-2">Name</th>
+                    <th className="text-left p-2">Department</th>
+                    <th className="text-left p-2">Role</th>
+                    <th className="text-left p-2">Email</th>
+                    <th className="text-left p-2">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.length > 0 ? (
+                    users.map(user => (
+                      <tr key={user._id} className="border-b hover:bg-gray-50">
+                        <td className="p-2">{user.employeeId}</td>
+                        <td className="p-2">{user.name}</td>
+                        <td className="p-2">{user.department}</td>
+                        <td className="p-2">{user.role}</td>
+                        <td className="p-2">{user.email}</td>
+                        <td className="p-2 space-x-2">
+                          <button className="text-blue-600 hover:underline" disabled>
+                            Edit (Coming Soon)
+                          </button>
+                          <button
+                            onClick={() => deleteUser(user._id)}
+                            className="text-red-600 hover:underline"
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={6} className="text-center p-4 text-gray-500">
+                        No users found.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            )}
           </div>
         )}
 
+        {/* Other tabs */}
+        {selected === 1 && <SignupPage />}
         {selected === 4 && (
           <div className="border p-6 rounded bg-white shadow">
             <input type="file" accept=".csv" className="mb-4" />
@@ -67,8 +155,6 @@ export default function AdminDashboard() {
             </button>
           </div>
         )}
-
-        {/* Add similar blocks for other sections if needed */}
       </main>
     </div>
   )
