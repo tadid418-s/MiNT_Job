@@ -12,7 +12,7 @@ const CreateJobForm = () => {
     qualifications: '',
     type: '',
     category: '',
-    experiencelevel: '',
+    experienceLevel: '',
     organization: ''
   });
 
@@ -62,7 +62,7 @@ const CreateJobForm = () => {
         qualifications: '',
         type: '',
         category: '',
-        experiencelevel: '',
+        experienceLevel: '',
         organization: ''
       });
 
@@ -177,8 +177,8 @@ const CreateJobForm = () => {
         <div>
           <label className="block font-medium text-gray-700">Experience Level</label>
           <input
-            name="experiencelevel"
-            value={formData.experiencelevel}
+            name="experienceLevel"
+            value={formData.experienceLevel}
             onChange={handleChange}
             required
             className="mt-1 block w-full p-2 border rounded"

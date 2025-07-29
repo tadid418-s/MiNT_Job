@@ -9,13 +9,10 @@ export async function GET() {
     // Make sure to wait for DB connection before querying
     await connectToDatabase();
 
-    // Fetch all jobs sorted by newest first
-    const jobs = await Job.find().sort({ createdAt: -1 }).lean();
-
+    const jobs = await Job.find({}).sort({ createdAt: -1 }); // fetch all jobs
     return NextResponse.json(jobs);
   } catch (error) {
-    console.error('Error fetching jobs:', error);
-    return NextResponse.json({ message: 'Failed to fetch jobs' }, { status: 500 });
+    return NextResponse.json({ message: 'Failed to fetch jobs', error }, { status: 500 });
   }
 }
 

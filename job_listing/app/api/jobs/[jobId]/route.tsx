@@ -1,31 +1,49 @@
-// pages/api/jobs/[jobId].ts
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import Job from '@/models/Job';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export async function GET(req: Request, { params }: { params: { jobId: string } }) {
   await connectToDatabase();
 
-  const { jobId } = req.query;
+  try {
+    const job = await Job.findById(params.jobId);
+    if (!job) {
+      return NextResponse.json({ error: 'Job not found' }, { status: 404 });
+    }
+    return NextResponse.json(job);
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+  }
+}
+
+export async function PUT(req: Request, { params }: { params: { jobId: string } }) {
+  await connectToDatabase();
 
   try {
-    switch (req.method) {
-      case 'GET':
-        const job = await Job.findById(jobId);
-        return res.status(200).json(job);
-
-      case 'PUT':
-        const updated = await Job.findByIdAndUpdate(jobId, req.body, { new: true });
-        return res.status(200).json(updated);
-
-      case 'DELETE':
-        await Job.findByIdAndDelete(jobId);
-        return res.status(204).end();
-
-      default:
-        return res.status(405).json({ message: 'Method Not Allowed' });
+    const body = await req.json();
+    const updated = await Job.findByIdAndUpdate(params.jobId, body, { new: true });
+    if (!updated) {
+      return NextResponse.json({ error: 'Job not found' }, { status: 404 });
     }
+    return NextResponse.json(updated);
   } catch (error) {
-    return res.status(500).json({ message: 'Server error', error });
+    console.error(error);
+    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: Request, { params }: { params: { jobId: string } }) {
+  await connectToDatabase();
+
+  try {
+    const deleted = await Job.findByIdAndDelete(params.jobId);
+    if (!deleted) {
+      return NextResponse.json({ error: 'Job not found' }, { status: 404 });
+    }
+    return new Response(null, { status: 204 });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }
