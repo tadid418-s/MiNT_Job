@@ -79,7 +79,4 @@ Pull requests are welcome! For major changes, please open an issue first to disc
 [MIT](LICENSE)
 
 ---
-
-**Made with ❤️ for the Ministry of Innovation and Technology (MiNT)**
-
 ---
